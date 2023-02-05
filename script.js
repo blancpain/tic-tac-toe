@@ -1,7 +1,7 @@
 const gameBoard = (() => {
   const gameArray = [];
   for (let index = 0; index < 9; index++) {
-    gameArray[index] = "";
+    gameArray[index] = index % 2 === 0 ? "X" : "O";
   }
 
   return {
@@ -16,9 +16,22 @@ const playRound = (() => {
 })();
 
 const displayController = (() => {
-  const display = document.querySelector(".display");
-
-  return { display };
+  const gameCells = document.querySelectorAll(".game-cell");
+  const clearDisplay = () => {
+    gameCells.forEach((cell) => {
+      cell.textContent = "";
+    });
+  };
+  const populateDisplay = () => {
+    gameCells.forEach((cell) => {
+      for (let index = 0; index < gameBoard.gameArray.length; index++) {
+        if (Number(cell.dataset.index) === index) {
+          cell.textContent = `${gameBoard.gameArray[index]}`;
+        }
+      }
+    });
+  };
+  return { clearDisplay, populateDisplay };
 })();
 
 const playerFactory = () => {
