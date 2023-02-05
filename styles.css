@@ -31,4 +31,16 @@ body {
   display: flex;
   justify-content: center;
   align-items: center;
+  transition: all 400ms;
+}
+
+button.restart {
+  margin-left: 1rem;
+  font-size: 18px;
+  font-weight: bold;
+  border: none;
+  border-radius: 20px;
+  padding: 10px 40px;
+  cursor: pointer;
+  min-width: 150px;
 }
