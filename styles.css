@@ -44,3 +44,7 @@ button.restart {
   cursor: pointer;
   min-width: 150px;
 }
+
+.player1 {
+  font-size: 30px;
+}
