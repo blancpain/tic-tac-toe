@@ -30,6 +30,8 @@ const gameBoard = (() => {
 const gameFlow = (() => {
   let currentTurn = "";
 
+  const startGame = () => { };
+
   const determineTurn = (isBoardEmpty) => {
     if (isBoardEmpty || currentTurn === "Player 2") {
       currentTurn = "Player 1";
@@ -53,7 +55,6 @@ const gameFlow = (() => {
       [currentGameArray[0], currentGameArray[4], currentGameArray[8]],
       [currentGameArray[2], currentGameArray[4], currentGameArray[6]],
     ];
-
     const gameArrayCols = [];
     for (let index = 0; index < currentGameArray.length / 3; index++) {
       gameArrayCols.push([
@@ -69,24 +70,32 @@ const gameFlow = (() => {
       ...gameArrayDiagonals,
     ];
 
+    // check for wins
     for (let index = 0; index < gameArrayAll.length; index++) {
       const gameArraySequence = gameArrayAll[index].join("");
       if (gameArraySequence === winnerX)
-        displayController.announceWinner("Player 1");
+        displayController.announceOutcome("Player 1");
       else if (gameArraySequence === winnerO)
-        displayController.announceWinner("Player 2");
+        displayController.announceOutcome("Player 2");
+    }
+
+    // check for draws
+    const isArrayFullyPopulated = (item) => item !== "";
+    if (currentGameArray.every(isArrayFullyPopulated)) {
+      displayController.announceOutcome("Draw");
     }
   };
 
-  return { determineTurn, determineOutcome };
+  return { determineTurn, determineOutcome, startGame };
 })();
 
 const displayController = (() => {
   const gameCells = document.querySelectorAll(".game-cell");
   const restartBtn = document.querySelector(".restart");
-  const playerOne = document.querySelector(".player1");
+  const announcementBoard = document.querySelector(".announcement-board");
   let isBoardEmpty = true;
 
+  // TODO: disable any clicks after clear is called....
   const clearDisplayAndGameboard = () => {
     gameCells.forEach((cell) => {
       cell.textContent = "";
@@ -96,8 +105,9 @@ const displayController = (() => {
     setTimeout(clearPrompts, 1000);
   };
 
+  // TODO: update below to clear scoreboard (or not depening on clear or restart game selected....)
   const clearPrompts = () => {
-    playerOne.textContent = "";
+    announcementBoard.textContent = "";
   };
 
   const populateDisplay = (event) => {
@@ -117,8 +127,9 @@ const displayController = (() => {
     }
   };
 
-  const announceWinner = (player) => {
-    playerOne.textContent = `${player} wins!`;
+  const announceOutcome = (outcome) => {
+    announcementBoard.textContent =
+      outcome === "Draw" ? "Draw!" : `${outcome} wins!`;
     setTimeout(clearDisplayAndGameboard, 2.0 * 1000);
   };
 
@@ -133,7 +144,7 @@ const displayController = (() => {
     clearDisplayAndGameboard,
     populateDisplay,
     isBoardEmpty,
-    announceWinner,
+    announceOutcome,
     clearPrompts,
   };
 })();
