@@ -12,13 +12,19 @@
   --game-font: "Press Start 2P", cursive;
 }
 
-body {
+body,
+html {
+  height: 100vh;
+}
+
+.layout {
   display: flex;
+  padding-top: 5rem;
   align-items: center;
   justify-content: center;
   flex-direction: column;
+  height: 100%;
   gap: 5rem;
-  height: 100vh;
   background-color: #0093e9;
   background-image: linear-gradient(160deg, #0093e9 0%, #80d0c7 100%);
 }
@@ -30,7 +36,6 @@ body {
   width: 100%;
   height: 100%;
   background-color: black;
-  /* visibility: hidden; */
   z-index: 1;
   background-color: #85ffbd;
   background-image: linear-gradient(45deg, #85ffbd 0%, #fffb7d 100%);
@@ -49,7 +54,7 @@ body {
 }
 
 .overlay-buttons button,
-.player-names button {
+.player-names-container button {
   margin-left: 1rem;
   font-size: 18px;
   font-weight: bold;
@@ -63,12 +68,19 @@ body {
   box-shadow: var(--box-shadow);
 }
 
-.player-names {
+.player-names-container {
+  position: relative;
   visibility: hidden;
+  width: 100%;
+  height: 150px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 }
 
-.player-names form {
+.player-names-container form {
   display: flex;
+  position: absolute;
   flex-direction: column;
   gap: 1rem;
   justify-content: center;
@@ -91,7 +103,11 @@ input[type="text"] {
   width: 100%;
 }
 
-.hide-overlay {
+.unhide-elements {
+  visibility: visible;
+}
+
+.hide-elements {
   visibility: hidden;
 }
 
@@ -106,7 +122,7 @@ input[type="text"] {
   font-family: "Rubik Vinyl", cursive;
   background-color: #00ff40;
   height: 150px;
-  width: 350px;
+  width: 400px;
   position: relative;
   box-shadow: var(--box-shadow);
   border-radius: 5px;
@@ -119,14 +135,24 @@ input[type="text"] {
   gap: 1rem;
 }
 
-.announcement-board {
-  position: absolute;
-  bottom: 0;
-  left: center;
-  margin-bottom: 1rem;
-  font-size: 45px;
-  color: blue;
+.announcement-message {
+  font-size: 150px;
+  color: red;
   font-weight: 700;
+  left: 50%;
+  top: 50%;
+  position: absolute;
+  z-index: 11;
+}
+
+.announcement-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  height: 100%;
+  width: 100%;
+  background: rgba(0, 0, 0, 0.5);
+  z-index: 10;
 }
 
 .main {
