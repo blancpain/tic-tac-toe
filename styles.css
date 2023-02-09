@@ -56,7 +56,7 @@ html {
 .overlay-buttons button,
 .player-names-container button {
   margin-left: 1rem;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   border: none;
   border-radius: 20px;
@@ -66,6 +66,7 @@ html {
   cursor: pointer;
   min-width: 150px;
   box-shadow: var(--box-shadow);
+  font-family: "Press Start 2P", cursive;
 }
 
 .player-names-container {
@@ -136,11 +137,15 @@ input[type="text"] {
 }
 
 .announcement-message {
-  font-size: 150px;
-  color: red;
+  font-size: 136px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  top: 34rem;
+  font-family: "Rubik Vinyl", cursive;
+  color: #00ff40;
+  width: 100%;
   font-weight: 700;
-  left: 50%;
-  top: 50%;
   position: absolute;
   z-index: 11;
 }
@@ -151,7 +156,7 @@ input[type="text"] {
   left: 0;
   height: 100%;
   width: 100%;
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.8);
   z-index: 10;
 }
 
@@ -190,7 +195,7 @@ input[type="text"] {
 button.restart,
 button.clear {
   margin-left: 1rem;
-  font-size: 18px;
+  font-size: 16px;
   font-weight: bold;
   border: none;
   border-radius: 20px;
@@ -199,6 +204,7 @@ button.clear {
   min-width: 150px;
   box-shadow: var(--box-shadow);
   background-color: #00ff40;
+  font-family: "Press Start 2P", cursive;
 }
 
 button:hover {

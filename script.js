@@ -46,6 +46,7 @@ const gameBoard = (() => {
 const gameFlow = (() => {
   let currentTurn = "";
   let isGameOver = false;
+  const currentGameArray = gameBoard.gameArray;
 
   const restartGame = () => {
     isGameOver = false;
@@ -60,8 +61,19 @@ const gameFlow = (() => {
     return currentTurn;
   };
 
+  const computerMove = () => {
+    let index = 0;
+    while (true) {
+      if (currentGameArray[index] === "") {
+        currentGameArray[index] = "O";
+        break;
+      }
+      index += 1;
+    }
+    displayController.populateComputerMove(index);
+  };
+
   const determineOutcome = () => {
-    const currentGameArray = gameBoard.gameArray;
     const winnerX = "XXX";
     const winnerO = "OOO";
     const [playerOne, playerTwo] = displayController.getPlayers();
@@ -109,10 +121,17 @@ const gameFlow = (() => {
       displayController.announceOutcome("Draw");
       isGameOver = true;
     }
-    return isGameOver;
   };
 
-  return { determineTurn, determineOutcome, restartGame };
+  const checkIfGameOver = () => isGameOver;
+
+  return {
+    determineTurn,
+    determineOutcome,
+    restartGame,
+    computerMove,
+    checkIfGameOver,
+  };
 })();
 
 const displayController = (() => {
@@ -143,6 +162,8 @@ const displayController = (() => {
   // flags
   let isBoardEmpty = true;
   let isGameVsAI = false;
+  // vars
+  let turnCounter = 0;
 
   const clearDisplayAndMessages = () => {
     gameCells.forEach((cell) => {
@@ -150,6 +171,7 @@ const displayController = (() => {
     });
     gameBoard.clearGameArray();
     isBoardEmpty = true;
+    turnCounter = 0;
     gameFlow.restartGame();
     announcementMessage.textContent = "";
     announcementContainer.classList.remove("announcement-overlay");
@@ -173,18 +195,37 @@ const displayController = (() => {
   const populateDisplay = (event) => {
     const cellIndex = Number(event.target.dataset.index);
     const cellValue = event.target.textContent;
-    if (cellValue !== "" || gameFlow.determineOutcome()) return;
+    if (cellValue !== "" || gameFlow.checkIfGameOver()) return;
     const currentTurn = gameFlow.determineTurn(isBoardEmpty);
-    if (currentTurn === "Player 1" && cellValue === "") {
+    if (!isGameVsAI) {
+      if (currentTurn === "Player 1" && cellValue === "") {
+        event.target.textContent = "X";
+        gameBoard.gameArray[cellIndex] = event.target.textContent;
+        isBoardEmpty = false;
+        gameFlow.determineOutcome();
+      } else if (currentTurn === "Player 2" && cellValue === "") {
+        event.target.textContent = "O";
+        gameBoard.gameArray[cellIndex] = event.target.textContent;
+        gameFlow.determineOutcome();
+      }
+    } else if (isGameVsAI && cellValue === "") {
       event.target.textContent = "X";
       gameBoard.gameArray[cellIndex] = event.target.textContent;
       isBoardEmpty = false;
-      gameFlow.determineOutcome();
-    } else if (currentTurn === "Player 2" && cellValue === "") {
-      event.target.textContent = "O";
-      gameBoard.gameArray[cellIndex] = event.target.textContent;
+      turnCounter += 1;
+      if (turnCounter <= 4) {
+        gameFlow.computerMove();
+      }
       gameFlow.determineOutcome();
     }
+  };
+
+  const populateComputerMove = (index) => {
+    gameCells.forEach((cell) => {
+      if (Number(cell.getAttribute("data-index")) === index) {
+        cell.textContent = "O";
+      }
+    });
   };
 
   const openPlayerVsPlayerPopup = () => {
@@ -224,7 +265,7 @@ const displayController = (() => {
       playerOneName.textContent = playerOneNameAI;
       playerTwoName.textContent = "Computer";
       playerOne.name = playerOneNamePvP;
-      playerTwo.name = playerTwoNamePvP;
+      playerTwo.name = "Computer";
     }
   };
 
@@ -276,5 +317,6 @@ const displayController = (() => {
     announceOutcome,
     getPlayers,
     updateScoreboard,
+    populateComputerMove,
   };
 })();
