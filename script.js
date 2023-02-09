@@ -8,6 +8,10 @@ const playerFactory = (name) => {
     wins += 1;
   };
 
+  const clearWins = () => {
+    wins = 0;
+  };
+
   return {
     set name(name) {
       playerName = name;
@@ -17,6 +21,7 @@ const playerFactory = (name) => {
     },
     getWins,
     updateWins,
+    clearWins,
   };
 };
 
@@ -59,6 +64,7 @@ const gameFlow = (() => {
     const currentGameArray = gameBoard.gameArray;
     const winnerX = "XXX";
     const winnerO = "OOO";
+    const [playerOne, playerTwo] = displayController.getPlayers();
 
     const gameArrayRows = [
       currentGameArray.slice(0, 3),
@@ -86,10 +92,14 @@ const gameFlow = (() => {
     for (let index = 0; index < gameArrayAll.length; index++) {
       const gameArraySequence = gameArrayAll[index].join("");
       if (gameArraySequence === winnerX) {
-        displayController.announceOutcome("Player 1");
+        displayController.announceOutcome(playerOne.name);
+        playerOne.updateWins();
+        displayController.updateScoreboard(playerOne);
         isGameOver = true;
       } else if (gameArraySequence === winnerO) {
-        displayController.announceOutcome("Player 2");
+        displayController.announceOutcome(playerTwo.name);
+        playerTwo.updateWins();
+        displayController.updateScoreboard(playerTwo);
         isGameOver = true;
       }
     }
@@ -127,6 +137,9 @@ const displayController = (() => {
   // create players
   const playerOne = playerFactory("");
   const playerTwo = playerFactory("");
+  // scoreboards
+  const playerOneScore = document.querySelector(".player-one-score");
+  const playerTwoScore = document.querySelector(".player-two-score");
   // flags
   let isBoardEmpty = true;
   let isGameVsAI = false;
@@ -151,6 +164,10 @@ const displayController = (() => {
     playerVsPlayerPopup.classList.remove("unhide-elements");
     playerVsPlayerPopup.reset();
     playerVsAIPopup.reset();
+    playerOne.clearWins();
+    playerTwo.clearWins();
+    playerOneScore.textContent = "0";
+    playerTwoScore.textContent = "0";
   };
 
   const populateDisplay = (event) => {
@@ -217,12 +234,20 @@ const displayController = (() => {
     announcementContainer.classList.add("announcement-overlay");
     announcementMessage.classList.add("announcement-message");
     const winningPlayer =
-      outcome === "Player 1"
+      outcome === playerOne.name
         ? playerOneName.textContent
         : playerTwoName.textContent;
     announcementMessage.textContent =
       outcome === "Draw" ? "Draw!" : `${winningPlayer} wins!`;
     setTimeout(clearDisplayAndMessages, 2000);
+  };
+
+  const updateScoreboard = (winner) => {
+    if (winner.name === playerOne.name) {
+      playerOneScore.textContent = winner.getWins();
+    } else {
+      playerTwoScore.textContent = winner.getWins();
+    }
   };
 
   // select Player or AI
@@ -250,5 +275,6 @@ const displayController = (() => {
     isBoardEmpty,
     announceOutcome,
     getPlayers,
+    updateScoreboard,
   };
 })();
