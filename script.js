@@ -1,9 +1,23 @@
-const playerFactory = () => {
-  const wins = 0;
+const playerFactory = (name) => {
+  let wins = 0;
+  let playerName = name;
 
-  const updateScore = () => { };
+  const getWins = () => wins;
 
-  return { updateScore };
+  const updateWins = () => {
+    wins += 1;
+  };
+
+  return {
+    set name(name) {
+      playerName = name;
+    },
+    get name() {
+      return playerName;
+    },
+    getWins,
+    updateWins,
+  };
 };
 
 const gameBoard = (() => {
@@ -110,33 +124,26 @@ const displayController = (() => {
   const playerVsAIPopup = document.querySelector("#player-vs-AI");
   const playerOneName = document.querySelector(".player-one-name");
   const playerTwoName = document.querySelector(".player-two-name");
+  // create players
+  const playerOne = playerFactory("");
+  const playerTwo = playerFactory("");
   // flags
   let isBoardEmpty = true;
   let isGameVsAI = false;
 
-  const clearPrompts = () => {
-    announcementMessage.textContent = "";
-  };
-
-  const clearDisplayAndGameboard = () => {
+  const clearDisplayAndMessages = () => {
     gameCells.forEach((cell) => {
       cell.textContent = "";
     });
     gameBoard.clearGameArray();
     isBoardEmpty = true;
     gameFlow.restartGame();
+    announcementMessage.textContent = "";
     announcementContainer.classList.remove("announcement-overlay");
-    clearPrompts();
   };
 
   const restartGame = () => {
-    gameCells.forEach((cell) => {
-      cell.textContent = "";
-    });
-    gameBoard.clearGameArray();
-    isBoardEmpty = true;
-    gameFlow.restartGame();
-    clearPrompts();
+    clearDisplayAndMessages();
     startGameOverlay.classList.toggle("hide-elements");
     playerVsAIPopup.classList.remove("hide-elements");
     playerVsAIPopup.classList.remove("unhide-elements");
@@ -182,24 +189,29 @@ const displayController = (() => {
   const startGame = (e) => {
     const playerOneNamePvP =
       playerVsPlayerPopup.children[0].children.player1.value;
-    const playerTwoNamePVP =
+    const playerTwoNamePvP =
       playerVsPlayerPopup.children[0].children.player2.value;
     const playerOneNameAI = playerVsAIPopup.children[0].children.player1.value;
-
-    if (!isGameVsAI && playerOneNamePvP !== "" && playerTwoNamePVP !== "") {
+    if (!isGameVsAI && playerOneNamePvP !== "" && playerTwoNamePvP !== "") {
       e.preventDefault();
       startGameOverlay.classList.toggle("hide-elements");
       playerVsPlayerPopup.classList.toggle("hide-elements");
       playerOneName.textContent = playerOneNamePvP;
-      playerTwoName.textContent = playerTwoNamePVP;
+      playerTwoName.textContent = playerTwoNamePvP;
+      playerOne.name = playerOneNamePvP;
+      playerTwo.name = playerTwoNamePvP;
     } else if (isGameVsAI && playerOneNameAI !== "") {
       e.preventDefault();
       startGameOverlay.classList.toggle("hide-elements");
       playerVsAIPopup.classList.toggle("hide-elements");
       playerOneName.textContent = playerOneNameAI;
       playerTwoName.textContent = "Computer";
+      playerOne.name = playerOneNamePvP;
+      playerTwo.name = playerTwoNamePvP;
     }
   };
+
+  const getPlayers = () => [playerOne, playerTwo];
 
   const announceOutcome = (outcome) => {
     announcementContainer.classList.add("announcement-overlay");
@@ -210,7 +222,7 @@ const displayController = (() => {
         : playerTwoName.textContent;
     announcementMessage.textContent =
       outcome === "Draw" ? "Draw!" : `${winningPlayer} wins!`;
-    setTimeout(clearDisplayAndGameboard, 2000);
+    setTimeout(clearDisplayAndMessages, 2000);
   };
 
   // select Player or AI
@@ -227,16 +239,16 @@ const displayController = (() => {
     cell.addEventListener("click", populateDisplay);
   });
   // clear display
-  clearBtn.addEventListener("click", clearDisplayAndGameboard);
+  clearBtn.addEventListener("click", clearDisplayAndMessages);
 
   // restart game
   restartBtn.addEventListener("click", restartGame);
 
   return {
-    clearDisplayAndGameboard,
+    clearDisplayAndMessages,
     populateDisplay,
     isBoardEmpty,
     announceOutcome,
-    clearPrompts,
+    getPlayers,
   };
 })();
