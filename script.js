@@ -45,11 +45,13 @@ const gameBoard = (() => {
 
 const gameFlow = (() => {
   let currentTurn = "";
-  let isGameOver = false;
+  const ai = "O";
+  const humanMove = "X";
   const currentGameArray = gameBoard.gameArray;
-
-  const restartGame = () => {
-    isGameOver = false;
+  const scores = {
+    X: -1,
+    O: 1,
+    Draw: 0,
   };
 
   const determineTurn = (isBoardEmpty) => {
@@ -61,22 +63,63 @@ const gameFlow = (() => {
     return currentTurn;
   };
 
-  const computerMove = () => {
-    let index = 0;
-    while (true) {
-      if (currentGameArray[index] === "") {
-        currentGameArray[index] = "O";
-        break;
-      }
-      index += 1;
+  // minimax usually uses depth (to check how many levels down we go?) but not needed here
+  const minimax = (currentGameArray, isMaximising) => {
+    const outcome = determineOutcome();
+    if (outcome !== null) {
+      return scores[outcome];
     }
-    displayController.populateComputerMove(index);
+    if (isMaximising) {
+      let bestScore = -Infinity;
+      for (let index = 0; index < currentGameArray.length; index++) {
+        if (currentGameArray[index] === "") {
+          currentGameArray[index] = ai;
+          const score = minimax(currentGameArray, false);
+          currentGameArray[index] = "";
+          bestScore = Math.max(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+    if (!isMaximising) {
+      let bestScore = Infinity;
+      for (let index = 0; index < currentGameArray.length; index++) {
+        if (currentGameArray[index] === "") {
+          currentGameArray[index] = humanMove;
+          const score = minimax(currentGameArray, true);
+          currentGameArray[index] = "";
+          bestScore = Math.min(score, bestScore);
+        }
+      }
+      return bestScore;
+    }
+  };
+
+  const computerMove = () => {
+    let bestScore = -Infinity;
+    let bestMove;
+
+    for (let index = 0; index < currentGameArray.length; index++) {
+      if (currentGameArray[index] === "") {
+        currentGameArray[index] = ai;
+        // call minimax with false since we now want to simulate the human move
+        // the line above is the computer move
+        // hence we call it as the minimizer (the human)
+        const score = minimax(currentGameArray, false);
+        currentGameArray[index] = "";
+        if (score > bestScore) {
+          bestScore = score;
+          bestMove = index;
+        }
+      }
+    }
+    currentGameArray[bestMove] = ai;
+    displayController.populateComputerMove(bestMove);
   };
 
   const determineOutcome = () => {
     const winnerX = "XXX";
     const winnerO = "OOO";
-    const [playerOne, playerTwo] = displayController.getPlayers();
 
     const gameArrayRows = [
       currentGameArray.slice(0, 3),
@@ -104,33 +147,25 @@ const gameFlow = (() => {
     for (let index = 0; index < gameArrayAll.length; index++) {
       const gameArraySequence = gameArrayAll[index].join("");
       if (gameArraySequence === winnerX) {
-        displayController.announceOutcome(playerOne.name);
-        playerOne.updateWins();
-        displayController.updateScoreboard(playerOne);
-        isGameOver = true;
-      } else if (gameArraySequence === winnerO) {
-        displayController.announceOutcome(playerTwo.name);
-        playerTwo.updateWins();
-        displayController.updateScoreboard(playerTwo);
-        isGameOver = true;
+        return "X";
+      }
+      if (gameArraySequence === winnerO) {
+        return "O";
       }
     }
     // check for draws
     const isArrayFullyPopulated = (item) => item !== "";
     if (currentGameArray.every(isArrayFullyPopulated)) {
-      displayController.announceOutcome("Draw");
-      isGameOver = true;
+      return "Draw";
     }
-  };
 
-  const checkIfGameOver = () => isGameOver;
+    return null;
+  };
 
   return {
     determineTurn,
     determineOutcome,
-    restartGame,
     computerMove,
-    checkIfGameOver,
   };
 })();
 
@@ -162,8 +197,6 @@ const displayController = (() => {
   // flags
   let isBoardEmpty = true;
   let isGameVsAI = false;
-  // vars
-  let turnCounter = 0;
 
   const clearDisplayAndMessages = () => {
     gameCells.forEach((cell) => {
@@ -172,7 +205,6 @@ const displayController = (() => {
     gameBoard.clearGameArray();
     isBoardEmpty = true;
     turnCounter = 0;
-    gameFlow.restartGame();
     announcementMessage.textContent = "";
     announcementContainer.classList.remove("announcement-overlay");
   };
@@ -192,31 +224,74 @@ const displayController = (() => {
     playerTwoScore.textContent = "0";
   };
 
+  const announceOutcome = (outcome) => {
+    announcementContainer.classList.add("announcement-overlay");
+    announcementMessage.classList.add("announcement-message");
+    const winningPlayer =
+      outcome === playerOne.name
+        ? playerOneName.textContent
+        : playerTwoName.textContent;
+    announcementMessage.textContent =
+      outcome === "Draw" ? "Draw!" : `${winningPlayer} wins!`;
+    setTimeout(clearDisplayAndMessages, 2000);
+  };
+
+  const updateScoreboard = (winner) => {
+    if (winner.name === playerOne.name) {
+      playerOneScore.textContent = winner.getWins();
+    } else {
+      playerTwoScore.textContent = winner.getWins();
+    }
+  };
+
   const populateDisplay = (event) => {
     const cellIndex = Number(event.target.dataset.index);
     const cellValue = event.target.textContent;
-    if (cellValue !== "" || gameFlow.checkIfGameOver()) return;
+    let outcome;
+    if (cellValue !== "") return;
     const currentTurn = gameFlow.determineTurn(isBoardEmpty);
     if (!isGameVsAI) {
       if (currentTurn === "Player 1" && cellValue === "") {
         event.target.textContent = "X";
         gameBoard.gameArray[cellIndex] = event.target.textContent;
         isBoardEmpty = false;
-        gameFlow.determineOutcome();
+        outcome = gameFlow.determineOutcome();
+        if (outcome === "X") {
+          announceOutcome(playerOne.name);
+          playerOne.updateWins();
+          updateScoreboard(playerOne);
+        } else if (outcome === "Draw") {
+          displayController.announceOutcome("Draw");
+        }
       } else if (currentTurn === "Player 2" && cellValue === "") {
         event.target.textContent = "O";
         gameBoard.gameArray[cellIndex] = event.target.textContent;
-        gameFlow.determineOutcome();
+        outcome = gameFlow.determineOutcome();
+        if (outcome === "O") {
+          announceOutcome(playerTwo.name);
+          playerTwo.updateWins();
+          updateScoreboard(playerTwo);
+        } else if (outcome === "Draw") announceOutcome("Draw");
       }
     } else if (isGameVsAI && cellValue === "") {
       event.target.textContent = "X";
       gameBoard.gameArray[cellIndex] = event.target.textContent;
       isBoardEmpty = false;
-      turnCounter += 1;
-      if (turnCounter <= 4) {
+      outcome = gameFlow.determineOutcome();
+      if (outcome !== "X") {
         gameFlow.computerMove();
       }
-      gameFlow.determineOutcome();
+      // check if computer won after it's last move
+      outcome = gameFlow.determineOutcome();
+      if (outcome === "O") {
+        announceOutcome(playerTwo.name);
+        playerTwo.updateWins();
+        updateScoreboard(playerTwo);
+      } else if (outcome === "X") {
+        announceOutcome(playerOne.name);
+        playerOne.updateWins();
+        updateScoreboard(playerOne);
+      } else if (outcome === "Draw") announceOutcome("Draw");
     }
   };
 
@@ -270,26 +345,6 @@ const displayController = (() => {
   };
 
   const getPlayers = () => [playerOne, playerTwo];
-
-  const announceOutcome = (outcome) => {
-    announcementContainer.classList.add("announcement-overlay");
-    announcementMessage.classList.add("announcement-message");
-    const winningPlayer =
-      outcome === playerOne.name
-        ? playerOneName.textContent
-        : playerTwoName.textContent;
-    announcementMessage.textContent =
-      outcome === "Draw" ? "Draw!" : `${winningPlayer} wins!`;
-    setTimeout(clearDisplayAndMessages, 2000);
-  };
-
-  const updateScoreboard = (winner) => {
-    if (winner.name === playerOne.name) {
-      playerOneScore.textContent = winner.getWins();
-    } else {
-      playerTwoScore.textContent = winner.getWins();
-    }
-  };
 
   // select Player or AI
   selectPlayerButton.addEventListener("click", openPlayerVsPlayerPopup);
