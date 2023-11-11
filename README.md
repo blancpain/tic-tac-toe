@@ -1,15 +1,19 @@
-# Tic Tac Toe
+# Tic Tac Toe Game 🎮
 
-Tic Tac Toe game written in HTML, CSS and JavaScript.
+Welcome to the Tic Tac Toe game, a classic challenge brought to life with HTML, CSS, and JavaScript. Dive into a world of strategic moves and intense battles in this timeless two-player game.
 
-# Key Takeaways
+## Key Takeaways
 
-Very rewarding project in terms of practice writing JS. The main goal was to have everything tucked away into it's own factory function/IIFE and avoid poluting the global scope.
+The AI implementation was a particularly insightful challenge, involving a delve into recursive functions. While there's still more to explore on that front, this project laid a solid foundation for tackling complex coding scenarios.
 
-This was a real eye opener in terms of thinking about how to structure my code and assigning each function a particular goal. It was also important to separate the major constructors/factories like the UI controller, the gameflow function and the player factory function and have them only encapsulate methods that relate to their purpose.
+Overall, a great project that provided valuable insights into code organization and strategy.
 
-Coding the AI was also super insightful and I dipped my toes in recursive functions but I still have a ways to go on that front.
+**Disclaimer:** This project is not currently optimized for mobile responsiveness. For the best experience, it is recommended to play the game on a desktop or larger screen.
 
-Great project overall and very happy with the final result.
+## Live Preview
 
-## [LIVE PREVIEW](https://blancpain.github.io/tic-tac-toe/)
+Experience the thrill of Tic Tac Toe! 🌐
+
+[**LIVE PREVIEW**](https://blancpain.github.io/tic-tac-toe/)
+
+Feel free to engage in this classic game, exploring the strategic depths of JavaScript. Enjoy the gameplay and the thoughtful coding behind it!
